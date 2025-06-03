@@ -106,7 +106,7 @@
 ## 🏆 GitHub Trophies
 
 <p align="center">
-  <img src="https://github-profile-trophy.vercel.app/?username=emerickvar&theme=radical&row=1&column=7&margin-w=15" alt="Emerick's Trophies" />
+  <img src="https://github-profile-trophy.vercel.app/?username=emerickvar&theme=github_dark&row=1&column=7&margin-w=15" alt="Emerick's Trophies" />
 </p>
 
 ---
