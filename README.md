@@ -5,7 +5,7 @@
 <div align="center">
   <h1>👋 Hola, soy Emerick Echeverría Vargas</h1>
   <p><em>"Amor Fati." — Friedrich Nietzsche</em></p>
-  <p>SR Zoho Functional Analyst | Full-Stack Developer</p>
+  <p>SR Zoho Functional Analyst | SR Zoho Developer | Full-Stack Developer</p>
   <p>Ingeniero en Sistemas Computacionales (IPN) con +5 años diseñando e implementando soluciones ERP/CRM y aplicaciones web.</p>
   
   <!-- Socials -->
@@ -31,28 +31,30 @@
 
 ## 🛠 Tech Stack
 
-<code><img height="30" src="https://img.shields.io/badge/C%23-239120?logo=c-sharp&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Python-3776AB?logo=python&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/PHP-777BB4?logo=php&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Symfony-000000?logo=symfony&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Java-ED8B00?logo=java&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Next.js-black?logo=nextdotjs&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/React-20232A?logo=react&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Flutter-02569B?logo=flutter&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Dart-0175C2?logo=dart&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/AJAX-005A9C?style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/SAP%20UI5-000000?logo=sap&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/ABAP-000000?style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Deluge-5658DD?style=flat-square" alt="Zoho Deluge"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Zoho-FF5C00?style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/EDIFY-007ACC?style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/SQL-4479A1?logo=mysql&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/XML-FC8019?logo=xml&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/RESTful_API-000000?style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/Git-F05032?logo=git&style=flat-square"/></code>
-<code><img height="30" src="https://img.shields.io/badge/CI%2FCD-2088FF?logo=githubactions&style=flat-square"/></code>
+<center>
+  <code><img height="30" src="https://img.shields.io/badge/C%23-239120?logo=c-sharp&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Python-3776AB?logo=python&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/PHP-777BB4?logo=php&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Symfony-000000?logo=symfony&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Java-ED8B00?logo=java&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Next.js-black?logo=nextdotjs&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/React-20232A?logo=react&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Flutter-02569B?logo=flutter&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Dart-0175C2?logo=dart&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/AJAX-005A9C?style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/SAP%20UI5-000000?logo=sap&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/ABAP-000000?style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Deluge-5658DD?style=flat-square" alt="Zoho Deluge"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Zoho-FF5C00?style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/EDIFY-007ACC?style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/SQL-4479A1?logo=mysql&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/XML-FC8019?logo=xml&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/RESTful_API-000000?style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/Git-F05032?logo=git&style=flat-square"/></code>
+  <code><img height="30" src="https://img.shields.io/badge/CI%2FCD-2088FF?logo=githubactions&style=flat-square"/></code>
+</center>
 
 ---
 
@@ -95,8 +97,8 @@
 ## 📈 GitHub Stats
 
 <p align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=emerickvar&show_icons=true&theme=radical&hide_border=true" alt="Emerick's GitHub Stats" />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=emerickvar&layout=compact&theme=radical&hide_border=true" alt="Top Languages" />
+  <img src="https://github-readme-stats.vercel.app/api?username=emerickvar&show_icons=true&theme=github_dark&hide_border=true" alt="Emerick's GitHub Stats" />
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=emerickvar&layout=compact&theme=github_dark&hide_border=true" alt="Top Languages" />
 </p>
 
 ---
