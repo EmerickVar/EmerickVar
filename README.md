@@ -1,65 +1,114 @@
-# ¡Hola! 👋 Soy Emerick Echeverría Vargas
+<!--
+**emerickvar/emerickvar** is a ✨ _special_ ✨ repository because its `README.md` appears on your GitHub profile.
+-->
 
-> "Amor Fati." — Friedrich Nietzsche
+<div align="center">
+  <h1>👋 Hola, soy Emerick Echeverría Vargas</h1>
+  <p><em>"Amor Fati." — Friedrich Nietzsche</em></p>
+  <p>SR Zoho Functional Analyst | Full-Stack Developer</p>
+  <p>Ingeniero en Sistemas Computacionales (IPN) con +5 años diseñando e implementando soluciones ERP/CRM y aplicaciones web.</p>
+  
+  <!-- Socials -->
+  <a href="https://www.linkedin.com/in/emerickvar/">
+    <img src="https://img.shields.io/badge/LinkedIn-emerickvar-blue?logo=linkedin&style=for-the-badge" alt="LinkedIn"/>
+  </a>
+  <a href="mailto:vargasemerick@gmail.com">
+    <img src="https://img.shields.io/badge/Email-vargasemerick@gmail.com-D14836?logo=gmail&style=for-the-badge" alt="Email"/>
+  </a>
+  <br><br>
+  <img src="https://komarev.com/ghpvc/?username=emerickvar&color=green" alt="Profile views"/>
+</div>
 
 ---
 
 ## 🚀 Sobre mí
-Ingeniero en Sistemas Computacionales (IPN), con más de 5 años de experiencia diseñando, implementando y manteniendo soluciones ERP/CRM y aplicaciones web. Especializado en Zoho One, SAP UI5/ABAP, EDIFY y middleware en Java. Me apasiona automatizar procesos, optimizar flujos de trabajo y traducir requerimientos de negocio en software de alto impacto.
+- 🎓 Formación: Ingeniería en Sistemas Computacionales · Escuela Superior de Cómputo, IPN  
+- 💼 Actualidad: **SR Zoho Functional Analyst** · New Age Coding Organization (Freelancer)  
+- 💡 Especialidades: Zoho One (Deluge), SAP ERP (UI5, ABAP, WM, MM), EDIFY, middleware Java  
+- 🌱 Aprendiendo: Flutter · Next.js · Arquitecturas de microservicios  
 
 ---
 
-## 🛠 Aptitudes y Tecnologías
+## 🛠 Tech Stack
 
-• Lenguajes:  
-  – C# · Python · PHP/Symfony · Java · JavaScript · Dart  
-• Frameworks / Librerías:  
-  – Node.js · Next.js · React · Flutter · AJAX · SAP UI5  
-• ERP / CRM / Low-Code:  
-  – Zoho One (Deluge) · EDIFY · SAP ERP (UI5, ABAP, WM, MM)  
-• Bases de datos y formatos:  
-  – SQL · XML  
-• APIs & DevOps:  
-  – RESTful APIs · Git · CI/CD  
-• Habilidades de análisis:  
-  – Modelado de negocios · Levantamiento de requerimientos (Functional Analyst) · Gestión de proyectos · Revisión y mantenimiento de código
+<code><img height="30" src="https://img.shields.io/badge/C%23-239120?logo=c-sharp&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Python-3776AB?logo=python&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/PHP-777BB4?logo=php&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Symfony-000000?logo=symfony&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Java-ED8B00?logo=java&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Next.js-black?logo=nextdotjs&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/React-20232A?logo=react&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Flutter-02569B?logo=flutter&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Dart-0175C2?logo=dart&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/AJAX-005A9C?style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/SAP%20UI5-000000?logo=sap&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/ABAP-000000?style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Deluge-5658DD?style=flat-square" alt="Zoho Deluge"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Zoho-FF5C00?style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/EDIFY-007ACC?style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/SQL-4479A1?logo=mysql&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/XML-FC8019?logo=xml&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/RESTful_API-000000?style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/Git-F05032?logo=git&style=flat-square"/></code>
+<code><img height="30" src="https://img.shields.io/badge/CI%2FCD-2088FF?logo=githubactions&style=flat-square"/></code>
 
 ---
 
 ## 💼 Experiencia Profesional
 
-• **SR Zoho Functional Analyst** · New Age Coding Organization (Feb 2024 – Presente)  
-  Implementación y desarrollo de soluciones web y de la suite completa Zoho One como freelancer.
+<details>
+<summary>Ver historial completo</summary>
 
-• **Zoho Functional Analyst** · InterConnecta (USA) (Oct 2023 – Feb 2024)  
-  Desarrollo en Deluge y análisis funcional en Zoho One para más de 15 clientes.
+- **SR Zoho Functional Analyst** · New Age Coding Organization (Freelancer)  
+  _Feb 2024 – Actualidad_  
+  - Implementación y personalización de Zoho One  
+  - Desarrollo de aplicaciones web y automatizaciones en Deluge  
 
-• **Systems Developer** · Larson Technology (Ago 2020 – Ago 2023)  
-  Administrador de ERP/CRM Zoho, scripting en Deluge y desarrollo de aplicaciones web a pedido de los distintos departamentos.
+- **Zoho Functional Analyst** · InterConnecta (USA)  
+  _Oct 2023 – Feb 2024_  
+  - Desarrollo Web/Deluge y análisis funcional para +15 clientes  
+  - Traducción de requerimientos de negocio en soluciones Zoho  
 
-• **Consultor Web** · Relum Soluciones Industriales de Tecnología (May 2019 – Ene 2020)  
-  Desarrollo de middleware en Java y sistemas ERP SAP usando UI5 y ABAP.
+- **Systems Developer** · Larson Technology  
+  _Ago 2020 – Ago 2023_  
+  - Administrador de ERP/CRM Zoho, scripting en Deluge  
+  - Desarrollo de aplicaciones a medida para Marketing, Ventas y Operaciones  
 
-• **Consultor Web** · Sineti Consulting (Ene 2019 – May 2019)  
-  Desarrollo de sistemas ERP SAP en UI5 y ABAP.
+- **Consultor Web** · Relum Soluciones Industriales de Tecnología  
+  _May 2019 – Ene 2020_  
+  - Middleware en Java y desarrollo de ERP SAP (UI5, ABAP)  
 
-• **Desarrollador EDIFY** · Anzen Digital (Jun 2018 – Ene 2019)  
-  Desarrollo de la plataforma EDIFY para Banamex.
+- **Consultor Web** · Sineti Consulting  
+  _Ene 2019 – May 2019_  
+  - Desarrollo de sistemas ERP SAP con UI5 y ABAP  
+
+- **Desarrollador EDIFY** · Anzen Digital  
+  _Jun 2018 – Ene 2019_  
+  - Diseño e implementación de la plataforma EDIFY para BANAMEX  
+
+</details>
 
 ---
 
-## 🎓 Formación
-
-• Pasante, Ingeniería en Sistemas Computacionales · Escuela Superior de Cómputo, IPN
-
----
-
-## 📫 ¡Conectemos!
-
-- 📧 vargasemerick@gmail.com  
-- 📧 emerick.vargas@newagecoding.org  
-- 🔗 https://www.linkedin.com/in/emerickvar/  
+## 📈 GitHub Stats
 
 <p align="center">
-  <img src="https://komarev.com/ghpvc/?username=emerickvar&color=blue" alt="profile views" />
+  <img src="https://github-readme-stats.vercel.app/api?username=emerickvar&show_icons=true&theme=radical&hide_border=true" alt="Emerick's GitHub Stats" />
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=emerickvar&layout=compact&theme=radical&hide_border=true" alt="Top Languages" />
+</p>
+
+---
+
+## 🏆 GitHub Trophies
+
+<p align="center">
+  <img src="https://github-profile-trophy.vercel.app/?username=emerickvar&theme=radical&row=1&column=7&margin-w=15" alt="Emerick's Trophies" />
+</p>
+
+---
+
+<p align="center">
+  <a href="#">&uarr; Volver arriba</a>
 </p>
