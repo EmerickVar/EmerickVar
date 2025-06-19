@@ -36,6 +36,7 @@
   <img src="https://img.shields.io/badge/Python-3776AB?logo=python&style=flat-square" alt="Python" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/PHP-777BB4?logo=php&style=flat-square" alt="PHP" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/Symfony-000000?logo=symfony&style=flat-square" alt="Symfony" height="30" style="margin:5px;"/>
+  <img src="https://img.shields.io/badge/TypeScriot-3178c6?logo=typescript&style=flat-square" alt="TypeScript" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/Java-ED8B00?logo=java&style=flat-square" alt="Java" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&style=flat-square" alt="JavaScript" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&style=flat-square" alt="Node.js" height="30" style="margin:5px;"/>
@@ -50,6 +51,7 @@
   <img src="https://img.shields.io/badge/Zoho-FF5C00?style=flat-square" alt="Zoho One" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/EDIFY-007ACC?style=flat-square" alt="EDIFY" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/SQL-4479A1?logo=mysql&style=flat-square" alt="SQL" height="30" style="margin:5px;"/>
+  <img src="https://img.shields.io/badge/MongoDB-589636?logo=mongodb&style=flat-square" alt="MongoDB" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/XML-FC8019?logo=xml&style=flat-square" alt="XML" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/RESTful_API-000000?style=flat-square" alt="RESTful API" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/Git-F05032?logo=git&style=flat-square" alt="Git" height="30" style="margin:5px;"/>
