@@ -11,7 +11,7 @@
   <!-- Socials -->
   <a href="https://www.linkedin.com/in/emerickvar/">
     <img src="https://img.shields.io/badge/LinkedIn-emerickvar-blue?logo=linkedin&style=for-the-badge" alt="LinkedIn"/>
-  </a>
+  </a><br>
   <a href="mailto:vargasemerick@gmail.com">
     <img src="https://img.shields.io/badge/Email-vargasemerick@gmail.com-D14836?logo=gmail&style=for-the-badge" alt="Email"/>
   </a>
