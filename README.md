@@ -36,7 +36,7 @@
   <img src="https://img.shields.io/badge/Python-3776AB?logo=python&style=flat-square" alt="Python" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/PHP-777BB4?logo=php&style=flat-square" alt="PHP" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/Symfony-000000?logo=symfony&style=flat-square" alt="Symfony" height="30" style="margin:5px;"/>
-  <img src="https://img.shields.io/badge/TypeScriot-3178c6?logo=typescript&style=flat-square" alt="TypeScript" height="30" style="margin:5px;"/>
+  <img src="https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&style=flat-square" alt="TypeScript" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/Java-ED8B00?logo=java&style=flat-square" alt="Java" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&style=flat-square" alt="JavaScript" height="30" style="margin:5px;"/>
   <img src="https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&style=flat-square" alt="Node.js" height="30" style="margin:5px;"/>
