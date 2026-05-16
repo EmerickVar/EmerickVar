@@ -99,8 +99,8 @@
 ## 📈 GitHub Stats
 
 <p align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=emerickvar&show_icons=true&theme=github_dark&hide_border=true" alt="Emerick's GitHub Stats" />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=emerickvar&layout=compact&theme=github_dark&hide_border=true" alt="Top Languages" />
+    <img src="https://github-readme-stats.shion.dev/api?username=emerickvar&show_icons=true&theme=github_dark&hide_border=true" alt="Emerick's GitHub Stats" />
+    <img src="https://github-readme-stats.shion.dev/api/top-langs/?username=emerickvar&layout=compact&theme=github_dark&hide_border=true" alt="Top Languages" />
 </p>
 
 ---
