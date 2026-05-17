@@ -99,8 +99,9 @@
 ## 📈 GitHub Stats
 
 <p align="center">
-      <img src="github-metrics.svg" alt="Emerick's GitHub Metrics" width="100%" />
+        <img src="https://github-readme-stats-production-c540.up.railway.app/api?username=emerickvar&show_icons=true&theme=github_dark&hide_border=true&count_private=true" alt="Emerick's GitHub Stats" />
 
+  <img src="https://github-readme-stats-production-c540.up.railway.app/api/top-langs/?username=emerickvar&layout=compact&theme=github_dark&hide_border=true&count_private=true" alt="Top Languages" />
     </p>
 
 ---
