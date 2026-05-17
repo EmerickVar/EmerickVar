@@ -99,9 +99,9 @@
 ## 📈 GitHub Stats
 
 <p align="center">
-    <img src="https://github-readme-stats.shion.dev/api?username=emerickvar&show_icons=true&theme=github_dark&hide_border=true" alt="Emerick's GitHub Stats" />
-    <img src="https://github-readme-stats.shion.dev/api/top-langs/?username=emerickvar&layout=compact&theme=github_dark&hide_border=true" alt="Top Languages" />
-</p>
+      <img src="github-metrics.svg" alt="Emerick's GitHub Metrics" width="100%" />
+
+    </p>
 
 ---
 
