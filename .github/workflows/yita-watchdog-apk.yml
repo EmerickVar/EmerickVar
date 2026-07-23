@@ -1,13 +1,115 @@
-name: Probe GitHub Actions
+name: Build Yita Perp Watchdog APK
 
 on:
   push:
     branches:
       - ci/yita-watchdog-build
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  probe:
+  build-apk:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
+
     steps:
-      - name: Confirm runner availability
-        run: echo "GitHub Actions runner available"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;35.0.0" "platform-tools"
+
+      - name: Set up Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Expand standalone Android project
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/yita-perp-watchdog
+          mkdir -p /tmp/yita-perp-watchdog
+          cat ci-payload/yita-watchdog.part* | base64 --decode > /tmp/yita-watchdog.tar.xz
+          xz --test /tmp/yita-watchdog.tar.xz
+          tar -xJf /tmp/yita-watchdog.tar.xz -C /tmp/yita-perp-watchdog
+
+          cat > /tmp/yita-perp-watchdog/settings.gradle.kts <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "YitaPerpWatchdog"
+          include(":watchdog")
+          EOF
+
+          cat > /tmp/yita-perp-watchdog/build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application") version "8.10.1" apply false
+          }
+          EOF
+
+          cat > /tmp/yita-perp-watchdog/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8
+          android.useAndroidX=false
+          android.nonTransitiveRClass=true
+          EOF
+
+          test -f /tmp/yita-perp-watchdog/watchdog/build.gradle.kts
+          test -f /tmp/yita-perp-watchdog/watchdog/src/main/AndroidManifest.xml
+
+      - name: Assemble APK
+        shell: bash
+        run: gradle -p /tmp/yita-perp-watchdog --no-daemon :watchdog:assembleDebug --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=/tmp/yita-perp-watchdog/watchdog/build/outputs/apk/debug/watchdog-debug.apk
+          test -s "$APK"
+          unzip -t "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          mkdir -p dist
+          cp "$APK" dist/Yita-Perp-Watchdog-0.1.0.apk
+          sha256sum dist/Yita-Perp-Watchdog-0.1.0.apk > dist/Yita-Perp-Watchdog-0.1.0.apk.sha256
+          {
+            echo "Yita Perp Watchdog 0.1.0"
+            echo "commit=${GITHUB_SHA}"
+            echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "java=$(java -version 2>&1 | head -1)"
+            echo "gradle=$(gradle --version | awk '/Gradle / {print $2; exit}')"
+          } > dist/build-info.txt
+
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Yita-Perp-Watchdog-APK
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
