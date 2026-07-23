@@ -1,9 +1,9 @@
 name: Build Yita Perp Watchdog APK
 
 on:
-  pull_request:
+  push:
     branches:
-      - ci/yita-watchdog-base
+      - ci/yita-watchdog-build
   workflow_dispatch:
 
 permissions:
@@ -12,10 +12,10 @@ permissions:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
 
     steps:
-      - name: Checkout temporary build branch
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -23,11 +23,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android platform and build tools
+      - name: Install Android SDK packages
         shell: bash
         run: |
           yes | sdkmanager --licenses >/dev/null || true
@@ -38,7 +39,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Expand standalone project
+      - name: Expand standalone Android project
         shell: bash
         run: |
           set -euo pipefail
@@ -79,14 +80,14 @@ jobs:
           android.nonTransitiveRClass=true
           EOF
 
-          test -f /tmp/yita-perp-watchdog/watchdog/src/main/AndroidManifest.xml
           test -f /tmp/yita-perp-watchdog/watchdog/build.gradle.kts
+          test -f /tmp/yita-perp-watchdog/watchdog/src/main/AndroidManifest.xml
 
-      - name: Assemble debug APK
+      - name: Assemble APK
         shell: bash
         run: gradle -p /tmp/yita-perp-watchdog --no-daemon :watchdog:assembleDebug --stacktrace
 
-      - name: Verify and checksum APK
+      - name: Verify APK
         shell: bash
         run: |
           set -euo pipefail
@@ -96,7 +97,7 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
           mkdir -p dist
           cp "$APK" dist/Yita-Perp-Watchdog-0.1.0.apk
-          sha256sum dist/Yita-Perp-Watchdog-0.1.0.apk | tee dist/Yita-Perp-Watchdog-0.1.0.apk.sha256
+          sha256sum dist/Yita-Perp-Watchdog-0.1.0.apk > dist/Yita-Perp-Watchdog-0.1.0.apk.sha256
           {
             echo "Yita Perp Watchdog 0.1.0"
             echo "commit=${GITHUB_SHA}"
