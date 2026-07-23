@@ -4,122 +4,130 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'yita-watchdog-build/**'
-  workflow_dispatch:
+      - 'yita-watchdog-build/source.part*'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
 
     steps:
-      - name: Checkout PR source
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-
-      - name: Create diagnostics directory
+      - name: Build, sign and publish APK chunks
         shell: bash
-        run: mkdir -p diagnostics dist tools
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android platform
-        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          set -o pipefail
-          {
-            yes | sdkmanager --licenses >/dev/null || true
-            sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
-          } 2>&1 | tee diagnostics/android-sdk.log
+          set -Eeuo pipefail
+          WORK=/tmp/yita-watchdog-repo
+          PROJECT=/tmp/yita-watchdog-project
+          LOG=/tmp/yita-watchdog-build.log
+          APK_OUT="$WORK/yita-watchdog-build/Yita-Perp-Watchdog-0.1.2.apk"
+          STATUS_OUT="$WORK/yita-watchdog-build/build-status.txt"
 
-      - name: Set up Gradle 8.11.1
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.11.1'
+          publish_results() {
+            local exit_code=$?
+            set +e
+            if [ -d "$WORK/.git" ]; then
+              cd "$WORK"
+              rm -f yita-watchdog-build/output.part*
+              if [ -s "$APK_OUT" ]; then
+                base64 -w0 "$APK_OUT" > /tmp/yita-watchdog-apk.b64
+                split -b 45000 -d -a 2 /tmp/yita-watchdog-apk.b64 yita-watchdog-build/output.part
+                sha256sum "$APK_OUT" > yita-watchdog-build/Yita-Perp-Watchdog-0.1.2.apk.sha256
+                file "$APK_OUT" > yita-watchdog-build/apk-file-type.txt
+              fi
+              {
+                echo "exit_code=$exit_code"
+                echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                echo "head_ref=$HEAD_REF"
+                echo "repository=$REPOSITORY"
+              } > "$STATUS_OUT"
+              cp "$LOG" yita-watchdog-build/build.log 2>/dev/null || true
+              git config user.name "Yita Watchdog Builder"
+              git config user.email "actions@github.com"
+              git add yita-watchdog-build/output.part* yita-watchdog-build/*.sha256 yita-watchdog-build/apk-file-type.txt yita-watchdog-build/build-status.txt yita-watchdog-build/build.log 2>/dev/null || true
+              git commit -m "ci: publish Yita Perp Watchdog 0.1.2 build" || true
+              git push origin "HEAD:$HEAD_REF" || true
+            fi
+            exit "$exit_code"
+          }
+          trap publish_results EXIT
 
-      - name: Expand source project
-        shell: bash
-        run: |
-          set -o pipefail
-          {
-            set -eux
-            rm -rf /tmp/yita-watchdog
-            mkdir -p /tmp/yita-watchdog
-            ls -la yita-watchdog-build
-            wc -c yita-watchdog-build/source.part*
-            sha256sum yita-watchdog-build/source.part*
-            cat yita-watchdog-build/source.part* | base64 --decode > /tmp/yita-watchdog.tar.xz
-            wc -c /tmp/yita-watchdog.tar.xz
-            sha256sum /tmp/yita-watchdog.tar.xz
-            xz --test /tmp/yita-watchdog.tar.xz
-            tar -xJf /tmp/yita-watchdog.tar.xz -C /tmp/yita-watchdog
-            find /tmp/yita-watchdog -maxdepth 5 -type f -print | sort
-            test -f /tmp/yita-watchdog/settings.gradle.kts
-            test -f /tmp/yita-watchdog/app/src/main/AndroidManifest.xml
-          } 2>&1 | tee diagnostics/expand.log
+          exec > >(tee "$LOG") 2>&1
+          echo "Cloning $REPOSITORY branch $HEAD_REF"
+          rm -rf "$WORK" "$PROJECT"
+          git clone --depth 1 --branch "$HEAD_REF" "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git" "$WORK"
+          mkdir -p "$PROJECT"
+          cd "$WORK"
 
-      - name: Assemble unsigned release APK
-        shell: bash
-        run: |
-          set -o pipefail
-          gradle -p /tmp/yita-watchdog --no-daemon :app:assembleRelease --stacktrace 2>&1 | tee diagnostics/build.log
+          echo "Expanding source payload"
+          wc -c yita-watchdog-build/source.part*
+          cat yita-watchdog-build/source.part* | base64 --decode > /tmp/yita-watchdog-source.tar.xz
+          xz --test /tmp/yita-watchdog-source.tar.xz
+          tar -xJf /tmp/yita-watchdog-source.tar.xz -C "$PROJECT"
+          test -f "$PROJECT/settings.gradle.kts"
+          test -f "$PROJECT/app/src/main/AndroidManifest.xml"
 
-      - name: Verify package and prepare signing toolkit
-        shell: bash
-        run: |
-          set -o pipefail
-          {
-            set -eux
-            APK=/tmp/yita-watchdog/app/build/outputs/apk/release/app-release-unsigned.apk
-            BUILD_TOOLS="$ANDROID_HOME/build-tools/35.0.0"
-            test -s "$APK"
-            unzip -t "$APK"
-            cp "$APK" dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk
-            cp "$BUILD_TOOLS/lib/apksigner.jar" tools/apksigner.jar
-            cp "$BUILD_TOOLS/zipalign" tools/zipalign
-            chmod +x tools/zipalign
-            sha256sum dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk > dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk.sha256
-            sha256sum tools/apksigner.jar tools/zipalign > tools/SHA256SUMS
-          } 2>&1 | tee diagnostics/verify.log
+          echo "Locating Android SDK"
+          ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          export ANDROID_HOME
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          SDKMANAGER=""
+          for candidate in \
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "$ANDROID_HOME/cmdline-tools/12.0/bin/sdkmanager" \
+            "$ANDROID_HOME/tools/bin/sdkmanager"; do
+            if [ -x "$candidate" ]; then SDKMANAGER="$candidate"; break; fi
+          done
+          if [ -z "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_HOME" -type f -name sdkmanager 2>/dev/null | head -1)"
+          fi
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
-      - name: Collect diagnostics
-        if: always()
-        shell: bash
-        run: |
-          {
-            echo "event=${GITHUB_EVENT_NAME}"
-            echo "sha=${GITHUB_SHA}"
-            java -version
-            gradle --version || true
-            find /tmp/yita-watchdog -maxdepth 6 -type f -print 2>/dev/null | sort || true
-          } > diagnostics/environment.txt 2>&1
+          echo "Preparing Gradle 8.11.1"
+          if command -v gradle >/dev/null 2>&1 && gradle --version | grep -q 'Gradle 8.11.1'; then
+            GRADLE=gradle
+          else
+            curl -L --fail --retry 3 --silent --show-error \
+              https://services.gradle.org/distributions/gradle-8.11.1-bin.zip \
+              -o /tmp/gradle-8.11.1-bin.zip
+            rm -rf /tmp/gradle-8.11.1
+            unzip -q /tmp/gradle-8.11.1-bin.zip -d /tmp
+            GRADLE=/tmp/gradle-8.11.1/bin/gradle
+          fi
+          java -version
+          "$GRADLE" --version
 
-      - name: Upload diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Yita-Perp-Watchdog-0.1.2-diagnostics
-          path: diagnostics/
-          if-no-files-found: warn
-          retention-days: 7
+          echo "Building release APK"
+          "$GRADLE" -p "$PROJECT" --no-daemon :app:assembleRelease --stacktrace
+          UNSIGNED="$PROJECT/app/build/outputs/apk/release/app-release-unsigned.apk"
+          test -s "$UNSIGNED"
 
-      - name: Upload unsigned APK and signing toolkit
-        uses: actions/upload-artifact@v4
-        with:
-          name: Yita-Perp-Watchdog-0.1.2-build
-          path: |
-            dist/
-            tools/
-          if-no-files-found: error
-          retention-days: 7
+          echo "Signing APK"
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/35.0.0"
+          keytool -genkeypair -noprompt \
+            -keystore /tmp/yita-watchdog-0.1.2.jks \
+            -storepass yita-watchdog-012 \
+            -keypass yita-watchdog-012 \
+            -alias yita \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Yita Perp Watchdog,O=EmerickVar,L=Mexico City,C=MX"
+          "$BUILD_TOOLS/zipalign" -f -p 4 "$UNSIGNED" /tmp/Yita-Perp-Watchdog-0.1.2-aligned.apk
+          "$BUILD_TOOLS/apksigner" sign \
+            --ks /tmp/yita-watchdog-0.1.2.jks \
+            --ks-key-alias yita \
+            --ks-pass pass:yita-watchdog-012 \
+            --key-pass pass:yita-watchdog-012 \
+            --out "$APK_OUT" \
+            /tmp/Yita-Perp-Watchdog-0.1.2-aligned.apk
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK_OUT"
+          unzip -t "$APK_OUT"
+          test -s "$APK_OUT"
+          echo "APK ready: $(wc -c < "$APK_OUT") bytes"
