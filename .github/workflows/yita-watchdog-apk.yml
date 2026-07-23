@@ -1,6 +1,9 @@
 name: Build Yita Perp Watchdog APK
 
 on:
+  push:
+    branches:
+      - ci/yita-watchdog-build
   pull_request:
     branches:
       - ci/yita-watchdog-base
