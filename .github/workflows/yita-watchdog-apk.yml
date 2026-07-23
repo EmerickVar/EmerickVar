@@ -1,0 +1,75 @@
+name: Build Yita Perp Watchdog APK
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'yita-watchdog-build/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      - name: Set up Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Expand source project
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/yita-watchdog
+          mkdir -p /tmp/yita-watchdog
+          cat yita-watchdog-build/source.part* | base64 --decode > /tmp/yita-watchdog.tar.xz
+          xz --test /tmp/yita-watchdog.tar.xz
+          tar -xJf /tmp/yita-watchdog.tar.xz -C /tmp/yita-watchdog
+          test -f /tmp/yita-watchdog/settings.gradle.kts
+          test -f /tmp/yita-watchdog/app/src/main/AndroidManifest.xml
+
+      - name: Assemble unsigned release APK
+        shell: bash
+        run: gradle -p /tmp/yita-watchdog --no-daemon :app:assembleRelease --stacktrace
+
+      - name: Verify package and prepare artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=/tmp/yita-watchdog/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s "$APK"
+          unzip -t "$APK"
+          mkdir -p dist
+          cp "$APK" dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk
+          sha256sum dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk > dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk.sha256
+
+      - name: Upload unsigned APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Yita-Perp-Watchdog-0.1.2-unsigned
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
