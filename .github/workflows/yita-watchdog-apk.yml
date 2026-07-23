@@ -1,9 +1,9 @@
 name: Probe hosted runners
 
 on:
-  push:
+  pull_request:
     branches:
-      - feature/yita-watchdog-0.1.2-zoom
+      - ci/runner-probe-base
 
 jobs:
   ubuntu22:
