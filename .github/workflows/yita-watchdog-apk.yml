@@ -23,7 +23,7 @@ jobs:
 
       - name: Create diagnostics directory
         shell: bash
-        run: mkdir -p diagnostics dist
+        run: mkdir -p diagnostics dist tools
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -64,7 +64,7 @@ jobs:
             sha256sum /tmp/yita-watchdog.tar.xz
             xz --test /tmp/yita-watchdog.tar.xz
             tar -xJf /tmp/yita-watchdog.tar.xz -C /tmp/yita-watchdog
-            find /tmp/yita-watchdog -maxdepth 4 -type f -print | sort
+            find /tmp/yita-watchdog -maxdepth 5 -type f -print | sort
             test -f /tmp/yita-watchdog/settings.gradle.kts
             test -f /tmp/yita-watchdog/app/src/main/AndroidManifest.xml
           } 2>&1 | tee diagnostics/expand.log
@@ -75,17 +75,22 @@ jobs:
           set -o pipefail
           gradle -p /tmp/yita-watchdog --no-daemon :app:assembleRelease --stacktrace 2>&1 | tee diagnostics/build.log
 
-      - name: Verify package and prepare artifact
+      - name: Verify package and prepare signing toolkit
         shell: bash
         run: |
           set -o pipefail
           {
             set -eux
             APK=/tmp/yita-watchdog/app/build/outputs/apk/release/app-release-unsigned.apk
+            BUILD_TOOLS="$ANDROID_HOME/build-tools/35.0.0"
             test -s "$APK"
             unzip -t "$APK"
             cp "$APK" dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk
+            cp "$BUILD_TOOLS/lib/apksigner.jar" tools/apksigner.jar
+            cp "$BUILD_TOOLS/zipalign" tools/zipalign
+            chmod +x tools/zipalign
             sha256sum dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk > dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk.sha256
+            sha256sum tools/apksigner.jar tools/zipalign > tools/SHA256SUMS
           } 2>&1 | tee diagnostics/verify.log
 
       - name: Collect diagnostics
@@ -109,10 +114,12 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Upload unsigned APK
+      - name: Upload unsigned APK and signing toolkit
         uses: actions/upload-artifact@v4
         with:
-          name: Yita-Perp-Watchdog-0.1.2-unsigned
-          path: dist/
+          name: Yita-Perp-Watchdog-0.1.2-build
+          path: |
+            dist/
+            tools/
           if-no-files-found: error
           retention-days: 7
