@@ -16,8 +16,14 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Checkout
+      - name: Checkout PR source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Create diagnostics directory
+        shell: bash
+        run: mkdir -p diagnostics dist
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -31,8 +37,11 @@ jobs:
       - name: Install Android platform
         shell: bash
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+          set -o pipefail
+          {
+            yes | sdkmanager --licenses >/dev/null || true
+            sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+          } 2>&1 | tee diagnostics/android-sdk.log
 
       - name: Set up Gradle 8.11.1
         uses: gradle/actions/setup-gradle@v4
@@ -42,29 +51,63 @@ jobs:
       - name: Expand source project
         shell: bash
         run: |
-          set -euo pipefail
-          rm -rf /tmp/yita-watchdog
-          mkdir -p /tmp/yita-watchdog
-          cat yita-watchdog-build/source.part* | base64 --decode > /tmp/yita-watchdog.tar.xz
-          xz --test /tmp/yita-watchdog.tar.xz
-          tar -xJf /tmp/yita-watchdog.tar.xz -C /tmp/yita-watchdog
-          test -f /tmp/yita-watchdog/settings.gradle.kts
-          test -f /tmp/yita-watchdog/app/src/main/AndroidManifest.xml
+          set -o pipefail
+          {
+            set -eux
+            rm -rf /tmp/yita-watchdog
+            mkdir -p /tmp/yita-watchdog
+            ls -la yita-watchdog-build
+            wc -c yita-watchdog-build/source.part*
+            sha256sum yita-watchdog-build/source.part*
+            cat yita-watchdog-build/source.part* | base64 --decode > /tmp/yita-watchdog.tar.xz
+            wc -c /tmp/yita-watchdog.tar.xz
+            sha256sum /tmp/yita-watchdog.tar.xz
+            xz --test /tmp/yita-watchdog.tar.xz
+            tar -xJf /tmp/yita-watchdog.tar.xz -C /tmp/yita-watchdog
+            find /tmp/yita-watchdog -maxdepth 4 -type f -print | sort
+            test -f /tmp/yita-watchdog/settings.gradle.kts
+            test -f /tmp/yita-watchdog/app/src/main/AndroidManifest.xml
+          } 2>&1 | tee diagnostics/expand.log
 
       - name: Assemble unsigned release APK
         shell: bash
-        run: gradle -p /tmp/yita-watchdog --no-daemon :app:assembleRelease --stacktrace
+        run: |
+          set -o pipefail
+          gradle -p /tmp/yita-watchdog --no-daemon :app:assembleRelease --stacktrace 2>&1 | tee diagnostics/build.log
 
       - name: Verify package and prepare artifact
         shell: bash
         run: |
-          set -euo pipefail
-          APK=/tmp/yita-watchdog/app/build/outputs/apk/release/app-release-unsigned.apk
-          test -s "$APK"
-          unzip -t "$APK"
-          mkdir -p dist
-          cp "$APK" dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk
-          sha256sum dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk > dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk.sha256
+          set -o pipefail
+          {
+            set -eux
+            APK=/tmp/yita-watchdog/app/build/outputs/apk/release/app-release-unsigned.apk
+            test -s "$APK"
+            unzip -t "$APK"
+            cp "$APK" dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk
+            sha256sum dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk > dist/Yita-Perp-Watchdog-0.1.2-unsigned.apk.sha256
+          } 2>&1 | tee diagnostics/verify.log
+
+      - name: Collect diagnostics
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "event=${GITHUB_EVENT_NAME}"
+            echo "sha=${GITHUB_SHA}"
+            java -version
+            gradle --version || true
+            find /tmp/yita-watchdog -maxdepth 6 -type f -print 2>/dev/null | sort || true
+          } > diagnostics/environment.txt 2>&1
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Yita-Perp-Watchdog-0.1.2-diagnostics
+          path: diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Upload unsigned APK
         uses: actions/upload-artifact@v4
