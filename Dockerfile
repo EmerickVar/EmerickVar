@@ -20,23 +20,9 @@ RUN sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 RUN curl -L --fail --retry 3 -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.11.1-bin.zip \
     && unzip -q /tmp/gradle.zip -d /opt/gradle
 
-WORKDIR /builder
-COPY yitaptap-build/source.part00 /builder/source.part00
-
-RUN mkdir -p /project /out \
-    && cat /builder/source.part00 | base64 --decode > /tmp/yitaptap-source.tar.xz \
-    && xz --test /tmp/yitaptap-source.tar.xz \
-    && tar -xJf /tmp/yitaptap-source.tar.xz -C /project \
-    && gradle -p /project --no-daemon :app:assembleRelease --stacktrace \
-    && test -s /project/app/build/outputs/apk/release/app-release-unsigned.apk \
-    && keytool -genkeypair -noprompt -keystore /out/YiTapTap-signing.jks -storepass yitaptap-local-100 -keypass yitaptap-local-100 -alias yitaptap -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=YiTapTap,O=New Age Coding Organization,L=Mexico City,C=MX" \
-    && zipalign -f -p 4 /project/app/build/outputs/apk/release/app-release-unsigned.apk /tmp/YiTapTap-aligned.apk \
-    && apksigner sign --ks /out/YiTapTap-signing.jks --ks-key-alias yitaptap --ks-pass pass:yitaptap-local-100 --key-pass pass:yitaptap-local-100 --out /out/YiTapTap.apk /tmp/YiTapTap-aligned.apk \
-    && apksigner verify --verbose --print-certs /out/YiTapTap.apk \
-    && unzip -t /out/YiTapTap.apk \
-    && sha256sum /out/YiTapTap.apk > /out/YiTapTap.apk.sha256 \
-    && sha256sum /out/YiTapTap-signing.jks > /out/YiTapTap-signing.jks.sha256 \
-    && printf '%s\n' 'YiTapTap 1.0.0' 'Package: org.newagecoding.yitaptap' 'Alias: yitaptap' 'Keystore password: yitaptap-local-100' 'Key password: yitaptap-local-100' > /out/signing-info.txt
+COPY yitaptap-app /project
+RUN gradle -p /project --no-daemon :app:assembleRelease --stacktrace \
+    && test -s /project/app/build/outputs/apk/release/app-release-unsigned.apk
 
 EXPOSE 8080
-CMD ["sh", "-c", "echo YITAPTAP_APK_BEGIN; base64 -w0 /out/YiTapTap.apk | fold -w 16000 | sed 's/^/YITAPTAP_APK_CHUNK:/'; echo YITAPTAP_APK_END; echo YITAPTAP_JKS_BEGIN; base64 -w0 /out/YiTapTap-signing.jks | fold -w 16000 | sed 's/^/YITAPTAP_JKS_CHUNK:/'; echo YITAPTAP_JKS_END; cat /out/YiTapTap.apk.sha256; cat /out/YiTapTap-signing.jks.sha256; python3 -m http.server ${PORT:-8080} --directory /out"]
+CMD ["sh", "-c", "set -eu; mkdir -p /out; printf '%s' \"$YITAPTAP_KEYSTORE_B64\" | base64 -d > /tmp/YiTapTap-release.jks; zipalign -f -p 4 /project/app/build/outputs/apk/release/app-release-unsigned.apk /tmp/YiTapTap-aligned.apk; apksigner sign --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --ks /tmp/YiTapTap-release.jks --ks-key-alias yitaptap --ks-pass \"pass:$YITAPTAP_KEYSTORE_PASSWORD\" --key-pass \"pass:$YITAPTAP_KEY_PASSWORD\" --out /out/YiTapTap.apk /tmp/YiTapTap-aligned.apk; apksigner verify --verbose --print-certs /out/YiTapTap.apk; unzip -t /out/YiTapTap.apk; sha256sum /out/YiTapTap.apk | tee /out/YiTapTap.apk.sha256; python3 -m http.server ${PORT:-8080} --directory /out"]
