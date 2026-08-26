@@ -17,61 +17,63 @@ jobs:
     timeout-minutes: 35
 
     steps:
-      - name: Checkout build branch
-        uses: actions/checkout@v4
-        with:
-          ref: build/yitaptap-1.0.0
-
       - name: Build, sign and publish YiTapTap
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           set -Eeuo pipefail
-          ROOT="$GITHUB_WORKSPACE"
+          WORK=/tmp/yitaptap-repo
           PROJECT=/tmp/yitaptap-project
           LOG=/tmp/yitaptap-build.log
-          BUILD_DIR="$ROOT/yitaptap-build"
-          APK="$BUILD_DIR/YiTapTap.apk"
+          APK_OUT="$WORK/yitaptap-build/YiTapTap.apk"
           KEYSTORE=/tmp/YiTapTap.jks
           PASS='yitaptap-local-100'
           ALIAS='yitaptap'
 
-          publish() {
-            local rc=$?
+          publish_results() {
+            local exit_code=$?
             set +e
-            cd "$ROOT"
-            rm -f yitaptap-build/output.part* yitaptap-build/signing.part*
-            if [ -s "$APK" ]; then
-              base64 -w0 "$APK" > /tmp/yitaptap-apk.b64
-              split -b 45000 -d -a 3 /tmp/yitaptap-apk.b64 yitaptap-build/output.part
-              sha256sum "$APK" > yitaptap-build/YiTapTap.apk.sha256
-              file "$APK" > yitaptap-build/apk-file-type.txt
+            if [ -d "$WORK/.git" ]; then
+              cd "$WORK"
+              rm -f yitaptap-build/output.part* yitaptap-build/signing.part*
+              if [ -s "$APK_OUT" ]; then
+                base64 -w0 "$APK_OUT" > /tmp/yitaptap-apk.b64
+                split -b 45000 -d -a 3 /tmp/yitaptap-apk.b64 yitaptap-build/output.part
+                sha256sum "$APK_OUT" > yitaptap-build/YiTapTap.apk.sha256
+                file "$APK_OUT" > yitaptap-build/apk-file-type.txt
+              fi
+              if [ -s "$KEYSTORE" ]; then
+                base64 -w0 "$KEYSTORE" > /tmp/yitaptap-key.b64
+                split -b 45000 -d -a 3 /tmp/yitaptap-key.b64 yitaptap-build/signing.part
+                sha256sum "$KEYSTORE" > yitaptap-build/YiTapTap.jks.sha256
+              fi
+              {
+                echo "exit_code=$exit_code"
+                echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                echo "head_ref=$HEAD_REF"
+              } > yitaptap-build/build-status.txt
+              cp "$LOG" yitaptap-build/build.log 2>/dev/null || true
+              rm -f "$APK_OUT"
+              git config user.name "YiTapTap Builder"
+              git config user.email "actions@github.com"
+              git add yitaptap-build/output.part* yitaptap-build/signing.part* yitaptap-build/*.sha256 yitaptap-build/apk-file-type.txt yitaptap-build/build-status.txt yitaptap-build/build.log 2>/dev/null || true
+              git commit -m "ci: publish YiTapTap 1.0.0 build" || true
+              git push origin "HEAD:$HEAD_REF" || true
             fi
-            if [ -s "$KEYSTORE" ]; then
-              base64 -w0 "$KEYSTORE" > /tmp/yitaptap-key.b64
-              split -b 45000 -d -a 3 /tmp/yitaptap-key.b64 yitaptap-build/signing.part
-              sha256sum "$KEYSTORE" > yitaptap-build/YiTapTap.jks.sha256
-            fi
-            {
-              echo "exit_code=$rc"
-              echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            } > yitaptap-build/build-status.txt
-            cp "$LOG" yitaptap-build/build.log 2>/dev/null || true
-            rm -f "$APK"
-            git config user.name "YiTapTap Builder"
-            git config user.email "actions@github.com"
-            git add yitaptap-build/output.part* yitaptap-build/signing.part* yitaptap-build/*.sha256 yitaptap-build/apk-file-type.txt yitaptap-build/build-status.txt yitaptap-build/build.log 2>/dev/null || true
-            git commit -m "ci: publish YiTapTap 1.0.0 build" || true
-            git push origin HEAD:build/yitaptap-1.0.0 || true
-            exit "$rc"
+            exit "$exit_code"
           }
-          trap publish EXIT
-          exec > >(tee "$LOG") 2>&1
+          trap publish_results EXIT
 
-          rm -rf "$PROJECT"
+          exec > >(tee "$LOG") 2>&1
+          rm -rf "$WORK" "$PROJECT"
+          git clone --depth 1 --branch "$HEAD_REF" "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git" "$WORK"
           mkdir -p "$PROJECT"
-          cat "$BUILD_DIR"/source.part* | base64 --decode > /tmp/yitaptap-source.tar.xz
+          cd "$WORK"
+
+          cat yitaptap-build/source.part* | base64 --decode > /tmp/yitaptap-source.tar.xz
           xz --test /tmp/yitaptap-source.tar.xz
           tar -xJf /tmp/yitaptap-source.tar.xz -C "$PROJECT"
           test -f "$PROJECT/settings.gradle.kts"
@@ -124,9 +126,9 @@ jobs:
             --ks-key-alias "$ALIAS" \
             --ks-pass pass:"$PASS" \
             --key-pass pass:"$PASS" \
-            --out "$APK" \
+            --out "$APK_OUT" \
             /tmp/YiTapTap-aligned.apk
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
-          unzip -t "$APK"
-          test -s "$APK"
-          echo "YiTapTap APK ready: $(wc -c < "$APK") bytes"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK_OUT"
+          unzip -t "$APK_OUT"
+          test -s "$APK_OUT"
+          echo "YiTapTap APK ready: $(wc -c < "$APK_OUT") bytes"
