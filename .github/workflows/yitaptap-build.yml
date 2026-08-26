@@ -1,0 +1,132 @@
+name: Build YiTapTap APK
+
+on:
+  push:
+    branches:
+      - build/yitaptap-1.0.0
+    paths:
+      - 'yitaptap-build/source.part*'
+      - '.github/workflows/yitaptap-build.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout build branch
+        uses: actions/checkout@v4
+        with:
+          ref: build/yitaptap-1.0.0
+
+      - name: Build, sign and publish YiTapTap
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -Eeuo pipefail
+          ROOT="$GITHUB_WORKSPACE"
+          PROJECT=/tmp/yitaptap-project
+          LOG=/tmp/yitaptap-build.log
+          BUILD_DIR="$ROOT/yitaptap-build"
+          APK="$BUILD_DIR/YiTapTap.apk"
+          KEYSTORE=/tmp/YiTapTap.jks
+          PASS='yitaptap-local-100'
+          ALIAS='yitaptap'
+
+          publish() {
+            local rc=$?
+            set +e
+            cd "$ROOT"
+            rm -f yitaptap-build/output.part* yitaptap-build/signing.part*
+            if [ -s "$APK" ]; then
+              base64 -w0 "$APK" > /tmp/yitaptap-apk.b64
+              split -b 45000 -d -a 3 /tmp/yitaptap-apk.b64 yitaptap-build/output.part
+              sha256sum "$APK" > yitaptap-build/YiTapTap.apk.sha256
+              file "$APK" > yitaptap-build/apk-file-type.txt
+            fi
+            if [ -s "$KEYSTORE" ]; then
+              base64 -w0 "$KEYSTORE" > /tmp/yitaptap-key.b64
+              split -b 45000 -d -a 3 /tmp/yitaptap-key.b64 yitaptap-build/signing.part
+              sha256sum "$KEYSTORE" > yitaptap-build/YiTapTap.jks.sha256
+            fi
+            {
+              echo "exit_code=$rc"
+              echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            } > yitaptap-build/build-status.txt
+            cp "$LOG" yitaptap-build/build.log 2>/dev/null || true
+            rm -f "$APK"
+            git config user.name "YiTapTap Builder"
+            git config user.email "actions@github.com"
+            git add yitaptap-build/output.part* yitaptap-build/signing.part* yitaptap-build/*.sha256 yitaptap-build/apk-file-type.txt yitaptap-build/build-status.txt yitaptap-build/build.log 2>/dev/null || true
+            git commit -m "ci: publish YiTapTap 1.0.0 build" || true
+            git push origin HEAD:build/yitaptap-1.0.0 || true
+            exit "$rc"
+          }
+          trap publish EXIT
+          exec > >(tee "$LOG") 2>&1
+
+          rm -rf "$PROJECT"
+          mkdir -p "$PROJECT"
+          cat "$BUILD_DIR"/source.part* | base64 --decode > /tmp/yitaptap-source.tar.xz
+          xz --test /tmp/yitaptap-source.tar.xz
+          tar -xJf /tmp/yitaptap-source.tar.xz -C "$PROJECT"
+          test -f "$PROJECT/settings.gradle.kts"
+          test -f "$PROJECT/app/src/main/AndroidManifest.xml"
+
+          ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          export ANDROID_HOME
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          SDKMANAGER=""
+          for candidate in \
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "$ANDROID_HOME/cmdline-tools/12.0/bin/sdkmanager" \
+            "$ANDROID_HOME/tools/bin/sdkmanager"; do
+            if [ -x "$candidate" ]; then SDKMANAGER="$candidate"; break; fi
+          done
+          if [ -z "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_HOME" -type f -name sdkmanager 2>/dev/null | head -1)"
+          fi
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+          if command -v gradle >/dev/null 2>&1 && gradle --version | grep -q 'Gradle 8.11.1'; then
+            GRADLE=gradle
+          else
+            curl -L --fail --retry 3 --silent --show-error \
+              https://services.gradle.org/distributions/gradle-8.11.1-bin.zip \
+              -o /tmp/gradle-8.11.1-bin.zip
+            rm -rf /tmp/gradle-8.11.1
+            unzip -q /tmp/gradle-8.11.1-bin.zip -d /tmp
+            GRADLE=/tmp/gradle-8.11.1/bin/gradle
+          fi
+
+          "$GRADLE" -p "$PROJECT" --no-daemon :app:assembleRelease --stacktrace
+          UNSIGNED="$PROJECT/app/build/outputs/apk/release/app-release-unsigned.apk"
+          test -s "$UNSIGNED"
+
+          keytool -genkeypair -noprompt \
+            -keystore "$KEYSTORE" \
+            -storepass "$PASS" \
+            -keypass "$PASS" \
+            -alias "$ALIAS" \
+            -keyalg RSA -keysize 3072 -validity 10000 \
+            -dname "CN=YiTapTap,O=New Age Coding Organization,L=Mexico City,C=MX"
+
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/35.0.0"
+          "$BUILD_TOOLS/zipalign" -f -p 4 "$UNSIGNED" /tmp/YiTapTap-aligned.apk
+          "$BUILD_TOOLS/apksigner" sign \
+            --ks "$KEYSTORE" \
+            --ks-key-alias "$ALIAS" \
+            --ks-pass pass:"$PASS" \
+            --key-pass pass:"$PASS" \
+            --out "$APK" \
+            /tmp/YiTapTap-aligned.apk
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
+          unzip -t "$APK"
+          test -s "$APK"
+          echo "YiTapTap APK ready: $(wc -c < "$APK") bytes"
