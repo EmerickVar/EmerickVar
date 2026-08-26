@@ -39,4 +39,4 @@ RUN mkdir -p /project /out \
     && printf '%s\n' 'YiTapTap 1.0.0' 'Package: org.newagecoding.yitaptap' 'Alias: yitaptap' 'Keystore password: yitaptap-local-100' 'Key password: yitaptap-local-100' > /out/signing-info.txt
 
 EXPOSE 8080
-CMD ["sh", "-c", "python3 -m http.server ${PORT:-8080} --directory /out"]
+CMD ["sh", "-c", "echo YITAPTAP_APK_BEGIN; base64 -w0 /out/YiTapTap.apk | fold -w 16000 | sed 's/^/YITAPTAP_APK_CHUNK:/'; echo YITAPTAP_APK_END; echo YITAPTAP_JKS_BEGIN; base64 -w0 /out/YiTapTap-signing.jks | fold -w 16000 | sed 's/^/YITAPTAP_JKS_CHUNK:/'; echo YITAPTAP_JKS_END; cat /out/YiTapTap.apk.sha256; cat /out/YiTapTap-signing.jks.sha256; python3 -m http.server ${PORT:-8080} --directory /out"]
