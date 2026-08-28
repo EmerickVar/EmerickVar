@@ -1,5 +1,7 @@
 FROM eclipse-temurin:17-jdk-jammy
 
+ARG YITAPTAP_ICON_B64
+
 ENV DEBIAN_FRONTEND=noninteractive \
     ANDROID_HOME=/opt/android-sdk \
     ANDROID_SDK_ROOT=/opt/android-sdk \
@@ -21,8 +23,14 @@ RUN curl -L --fail --retry 3 -o /tmp/gradle.zip https://services.gradle.org/dist
     && unzip -q /tmp/gradle.zip -d /opt/gradle
 
 COPY yitaptap-app /project
-RUN gradle -p /project --no-daemon :app:assembleRelease --stacktrace \
-    && test -s /project/app/build/outputs/apk/release/app-release-unsigned.apk
+RUN set -eux; \
+    test -n "$YITAPTAP_ICON_B64"; \
+    rm -f /project/app/src/main/res/drawable-nodpi/yitaptap_icon.png; \
+    printf '%s' "$YITAPTAP_ICON_B64" | base64 -d > /project/app/src/main/res/drawable-nodpi/yitaptap_icon.webp; \
+    file /project/app/src/main/res/drawable-nodpi/yitaptap_icon.webp | grep -q Web/P; \
+    gradle -p /project --no-daemon :app:assembleRelease --stacktrace; \
+    test -s /project/app/build/outputs/apk/release/app-release-unsigned.apk; \
+    aapt2 dump badging /project/app/build/outputs/apk/release/app-release-unsigned.apk | grep -q "package: name='org.newagecoding.yitaptap' versionCode='3' versionName='1.0.2'"
 
 EXPOSE 8080
-CMD ["sh", "-c", "set -eu; mkdir -p /out; printf '%s' \"$YITAPTAP_KEYSTORE_B64\" | base64 -d > /tmp/YiTapTap-release.jks; zipalign -f -p 4 /project/app/build/outputs/apk/release/app-release-unsigned.apk /tmp/YiTapTap-aligned.apk; apksigner sign --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --ks /tmp/YiTapTap-release.jks --ks-key-alias yitaptap --ks-pass \"pass:$YITAPTAP_KEYSTORE_PASSWORD\" --key-pass \"pass:$YITAPTAP_KEY_PASSWORD\" --out /out/YiTapTap.apk /tmp/YiTapTap-aligned.apk; apksigner verify --verbose --print-certs /out/YiTapTap.apk; unzip -t /out/YiTapTap.apk; sha256sum /out/YiTapTap.apk | tee /out/YiTapTap.apk.sha256; python3 -m http.server ${PORT:-8080} --directory /out"]
+CMD ["sh", "-c", "set -eu; mkdir -p /out; printf '%s' \"$YITAPTAP_KEYSTORE_B64\" | base64 -d > /tmp/YiTapTap-release.jks; zipalign -f -p 4 /project/app/build/outputs/apk/release/app-release-unsigned.apk /tmp/YiTapTap-aligned.apk; apksigner sign --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --ks /tmp/YiTapTap-release.jks --ks-key-alias yitaptap --ks-pass \"pass:$YITAPTAP_KEYSTORE_PASSWORD\" --key-pass \"pass:$YITAPTAP_KEY_PASSWORD\" --out /out/YiTapTap.apk /tmp/YiTapTap-aligned.apk; zipalign -c -p 4 /out/YiTapTap.apk; apksigner verify --verbose --print-certs /out/YiTapTap.apk | tee /out/apksigner.txt; unzip -t /out/YiTapTap.apk; aapt2 dump badging /out/YiTapTap.apk | tee /out/YiTapTap.badging.txt; sha256sum /out/YiTapTap.apk | tee /out/YiTapTap.apk.sha256; python3 -m http.server ${PORT:-8080} --directory /out"]
