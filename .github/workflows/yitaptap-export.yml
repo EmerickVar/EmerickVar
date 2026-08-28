@@ -1,0 +1,36 @@
+name: YiTapTap APK Export
+
+on:
+  push:
+    paths:
+      - '.github/workflows/yitaptap-export.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified YiTapTap APK
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 5 --retry-all-errors \
+            https://yitaptap-builder-main-production.up.railway.app/YiTapTap.apk \
+            --output YiTapTap.apk
+          test -s YiTapTap.apk
+
+      - name: Verify SHA-256
+        run: |
+          echo '48a523f756273db7040a0aca0b7ca1aad8d4e7b2986b6e30d16e18415f04fa4c  YiTapTap.apk' | sha256sum --check --strict
+          unzip -t YiTapTap.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YiTapTap-1.0.2
+          path: YiTapTap.apk
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
